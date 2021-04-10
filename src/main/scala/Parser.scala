@@ -20,16 +20,24 @@ object Parser {
     * @param hackAsm The input HACK assembly to parse
     * @return A list of parsed HACK A / C kind Instruction
     */
-  def parse(hackAsm: String) = {
+  def parse(hackAsm: String): Iterable[Instruction] = {
+    // read lines from full assembly string
     val asmLines = hackAsm
       .split(Properties.lineSeparator)
       .zipWithIndex
       // compile list of lines: text and line numbers
       .map { case (text, idx) => Line(text, idx + 1) }
 
-    // strip whitespace and comments
-    val stripAsmLines = strip(asmLines)
+    // strip whitespace and comments & parse instructions
+    strip(asmLines).map(parseLine(_))
+  }
 
+  /** Parse a single assembly line into an [[Instruction]]
+    *
+    *  @param line to parse into an [[Instruction]]
+    *  @return The parsed [[Instruction]] from the Assembly line
+    */
+  def parseLine(line: Line): Instruction = {
     // match instruction kind using regex & parse instruction
     val aKindPattern = s"@(${SymbolPattern}|\\d+)".r
     val cKindPattern = ("((?:[AMD]|A[MD]|A?MD)=)?" +
@@ -37,22 +45,20 @@ object Parser {
       "(;J(?:GT|EQ|GE|LT|NE|LE|MP))?").r
     val labelDeclarePattern = s"\\(${SymbolPattern}\\)".r
 
-    stripAsmLines.map((line) => {
-      line.text match {
-        // some optional regex groups on no match results in null variables
-        // ie 'jump' may be null when the user does specify the jump part of a c
-        // c instruction. Use Option to convert nulls to empty string
-        case aKindPattern(address) => new AInstruction(address)
-        case cKindPattern(dest, compute, jump) =>
-          new CInstruction(
-            Option(dest).getOrElse(""),
-            compute,
-            Option(jump).getOrElse("")
-          )
-        case labelDeclarePattern(label) =>
-          new LabelDeclare(Option(label).getOrElse(""))
-      }
-    })
+    line.text match {
+      // some optional regex groups on no match results in null variables
+      // ie 'jump' may be null when the user does specify the jump part of a c
+      // c instruction. Use Option to convert nulls to empty string
+      case aKindPattern(address) => new AInstruction(address)
+      case cKindPattern(dest, compute, jump) =>
+        new CInstruction(
+          Option(dest).getOrElse(""),
+          compute,
+          Option(jump).getOrElse("")
+        )
+      case labelDeclarePattern(label) =>
+        new LabelDeclare(Option(label).getOrElse(""))
+    }
   }
 
   /** Strip the whitespace and comments from the given lines of Hack Assembly

@@ -36,7 +36,7 @@ class TestParser extends FunSuite {
     )
   }
 
-  test("Parser.parse") {
+  test("Parser.parseLine") {
     // generate C kind test cases
     val dests = List("", "M=", "D=", "MD=", "A=", "AM=", "AD=", "AMD=")
     val computes = List(
@@ -80,14 +80,13 @@ class TestParser extends FunSuite {
       "@R16" -> new AInstruction("R16"),
       "@3325" -> new AInstruction("3325")
     )
-
     val testCases = aTestCases ++ cTestCases
-    val inputTexts = testCases.map(_._1)
     val expectedInstructions = testCases.map(_._2)
-    val actualInstructions = inputTexts.map(Parser.parse(_).head)
+    val actualInstructions = testCases
+      .map { case (text, _) => Line(text, 1) }
+      .map(Parser.parseLine(_))
     actualInstructions.zip(expectedInstructions).foreach {
       case (actual, expected) => {
-
         assert(actual == expected)
       }
     }
