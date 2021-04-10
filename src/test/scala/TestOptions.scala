@@ -15,26 +15,41 @@ class TestOptions extends FunSuite {
       "out.hack",
       "in.asm"
     ))
-
-    assert(opts.inputPath == "in.asm")
-    assert(opts.outputPath == "out.hack")
+    assert(opts == Options("in.asm", "out.hack", "false"))
   }
 
-  test("Options.fromArgs output path unspecified"){
+  test("Options.fromArgs: Output path unspecified"){
     val opts = Options.fromArgs(Array(
       "hackas",
       "in.asm"
     ))
-
-    assert(opts.inputPath == "in.asm")
-    assert(opts.outputPath == "a.out")
+    assert(opts == Options("in.asm", "out.hack", "false"))
   }
 
-  test("Options.fromArgs error missing input path") {
+  test("Options.fromArgs: Only help option") {
+    val opts = Options.fromArgs(Array(
+      "hackas",
+      "--help"
+    ))
+    assert(opts == Options("in.asm", "out.hack", "true"))
+  }
+
+  test("Options.fromArgs: Error missing input path") {
     val exception = intercept[IllegalArgumentException]{
       Options.fromArgs(Array(
         "hackas",
         "--output",
+        "out.hack",
+      ))
+    }
+  }
+
+  test("Options.fromArgs: Error bad option") {
+    val exception = intercept[IllegalArgumentException]{
+      Options.fromArgs(Array(
+        "hackas",
+        "-o",
+        "out.hack",
         "in.asm"
       ))
     }

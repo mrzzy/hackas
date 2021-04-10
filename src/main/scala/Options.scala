@@ -5,12 +5,25 @@
 package co.mrzzy.nand2tetris.p1.project6;
 
 
-// stores assembler options
-case class Options(inputPath: String, outputPath:String)
+/** Stores program options
+ *  
+ *  inputPath: Path to obtain input HAC Assembly to assemble
+ *  outputPath: Path to write output HACK machine code to.
+ *  showUsage: Whther to show usage information and exit.
+*/
+case class Options(
+  inputPath: String = "in.asm",
+  outputPath: String = "out.hack",
+  showUsage: String = "false"
+)
 
 object Options {
   val OutputOpt = "--output"
-  val DefaultOutputPath = "a.out"
+  val HelpOpt  = "--help"
+  val OptionDefaults = Map(
+    OutputOpt -> "out.hack",
+    HelpOpt -> "false"
+  )
   
   /** Contruct a [[Options]] instance from commmand line arguments
    *  
@@ -19,27 +32,35 @@ object Options {
    *  @return Contructed [[Options]] instance.
    */
   def fromArgs(args: Array[String]): Options = {
-    // partition options (and option args) against program args
+    // filter options from given args
     // .tail to skip program name in args
-    val (optionArgs, programArgsGrouped) = args.tail.grouped(2)
-      .partition {
-      // options come in (option, option arg) pair & start with "-"
-      case Array(first, second) if first(0) == '-' => true
-      case _ => false
-    }
+    val options = args.filter { _(0) == '-' }
 
-    // extract input path from program args
-    val programArgs = programArgsGrouped.flatten.toVector
-    if(programArgs.length != 1) {
-      throw new IllegalArgumentException("Missing expected INPUT file path")
+    // parse options and their arguments
+    val givenOptions = options.collect {
+      case OutputOpt => OutputOpt -> args(args.indexOf(OutputOpt) + 1)
+      case HelpOpt => HelpOpt -> "true"
+      case badOpt => throw new IllegalArgumentException(s"Error: Bad option: ${badOpt}")
+    }.toMap
+    val optionMap = OptionDefaults ++ givenOptions
+  
+    if(optionMap(HelpOpt) == "true") {
+      return Options(showUsage = "true")
     }
-    val inputPath = programArgs.head
-
-    // extract output path from options
-    val optionMap = optionArgs.map{ case Array(first, second) => (first, second) }.toMap
-    val outputPath = optionMap.getOrElse(OutputOpt, DefaultOutputPath)
     
-    Options(inputPath, outputPath)
+    // filter out arguments consumed for options to obtain program args
+    // .tail required to skip out program name in args.
+    val optionArgs = givenOptions.keySet | givenOptions.values.toSet
+    val programArgs = args.tail.filter(!optionArgs.contains(_))
+    if(programArgs.length != 1){ 
+      throw new IllegalArgumentException(s"Error: Missing required INPUT path argument")
+    }
+
+    Options(
+      inputPath = programArgs(0),
+      outputPath = optionMap(OutputOpt),
+      showUsage = optionMap(HelpOpt)
+    )
   }
 }
 
