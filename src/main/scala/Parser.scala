@@ -8,6 +8,7 @@ import scala.util.Properties
 import scala.util.matching.Regex
 
 import Symbols.SymbolPattern
+import java.nio.charset.MalformedInputException
 
 /** Parser that parses HACK Assembly into Instructions */
 object Parser {
@@ -39,25 +40,36 @@ object Parser {
     */
   def parseLine(line: Line): Instruction = {
     // match instruction kind using regex & parse instruction
-    val aKindPattern = s"@(${SymbolPattern}|\\d+)".r
-    val cKindPattern = ("((?:[AMD]|A[MD]|A?MD)=)?" +
-      "([01]|-1|[-!]?[DA]|[DA][+-]1|D[-+&|]A|A[-]D)" +
-      "(;J(?:GT|EQ|GE|LT|NE|LE|MP))?").r
-    val labelDeclarePattern = s"\\(${SymbolPattern}\\)".r
+    val aKindPattern = "@(\\w+)".r
+    val cKindPattern = "(?:(\\w+)=)?([-!+&|\\w01]+)(?:;(\\w+))?".r
+    val labelDeclarePattern = "\\((\\w+)\\)".r
 
-    line.text match {
-      // some optional regex groups on no match results in null variables
-      // ie 'jump' may be null when the user does specify the jump part of a c
-      // c instruction. Use Option to convert nulls to empty string
-      case aKindPattern(address) => new AInstruction(address)
-      case cKindPattern(dest, compute, jump) =>
-        new CInstruction(
-          Option(dest).getOrElse(""),
-          compute,
-          Option(jump).getOrElse("")
+    try {
+      line.text match {
+        // some optional regex groups on no match results in null variables
+        // ie 'jump' may be null when the user does specify the jump part of a c
+        // c instruction. Use Option to convert nulls to empty string
+        case aKindPattern(address) => new AInstruction(address)
+        case cKindPattern(dest, compute, jump) =>
+          new CInstruction(
+            Option(dest).getOrElse(""),
+            compute,
+            Option(jump).getOrElse("")
+          )
+        case labelDeclarePattern(label) =>
+          new LabelDeclare(Option(label).getOrElse(""))
+        case badInstruction => {
+          throw new IllegalArgumentException(
+            s"Error: Line ${line.number}: Malformed Instruction not a" +
+              s"A, C Instruction or Label Declaration: ${line.text}"
+          )
+        }
+      }
+    } catch {
+      case e: IllegalArgumentException =>
+        throw new IllegalArgumentException(
+          s"Error: Line ${line.number}: ${e.getMessage()}"
         )
-      case labelDeclarePattern(label) =>
-        new LabelDeclare(Option(label).getOrElse(""))
     }
   }
 
@@ -77,11 +89,11 @@ object Parser {
         val clipText = line.text.substring(0, clipIdx)
         Line(clipText, line.number)
       })
-      .filter(_.text.length > 0)
       .map((line) => {
         // remove all whitespace in line
         val compactText = "\\s".r.replaceAllIn(line.text, "")
         Line(compactText, line.number)
       })
+      .filter(_.text.length > 0)
   }
 }

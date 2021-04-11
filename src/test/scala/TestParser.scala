@@ -6,6 +6,7 @@ package co.mrzzy.nand2tetris.p1.project6;
 
 import org.scalatest.FunSuite
 import Parser.Line
+import scala.io.Source
 
 class TestParser extends FunSuite {
   test("Parser.strip") {
@@ -37,41 +38,33 @@ class TestParser extends FunSuite {
   }
 
   test("Parser.parseLine") {
-    // generate C kind test cases
-    val dests = List("", "M=", "D=", "MD=", "A=", "AM=", "AD=", "AMD=")
+    // generate C instruction test cases
+    val dests = List("", "M", "MD", "AMD")
     val computes = List(
       "0",
-      "1",
       "-1",
       "D",
-      "A",
       "!D",
-      "!A",
       "-D",
-      "-A",
       "D+1",
-      "A+1",
       "D-1",
-      "A-1",
-      "D+1",
-      "D-A",
-      "A-D",
       "D&A",
       "D|A"
     )
     val jumps = List(
       "",
-      ";JGT",
-      ";JEQ",
-      ";JGE",
-      ";JLT",
-      ";JNE",
-      ";JLE",
-      ";JMP"
+      "JGT"
     )
     val cTestCases =
-      for (dest <- dests; compute <- computes; jump <- jumps)
-        yield (dest + compute + jump -> new CInstruction(dest, compute, jump))
+      for (dest <- dests; compute <- computes; jump <- jumps) yield {
+        val suffixedDest = if (dest.length > 0) s"$dest=" else ""
+        val prefixedJump = if (jump.length > 1) s";$jump" else ""
+        (suffixedDest + compute + prefixedJump -> new CInstruction(
+          dest,
+          compute,
+          jump
+        ))
+      }
 
     // A instruction test cases
     val aTestCases = List(
@@ -90,5 +83,19 @@ class TestParser extends FunSuite {
         assert(actual == expected)
       }
     }
+  }
+
+  test("Parser.parse") {
+    Parser.parse("""
+      // do stuff
+      AMD=D+M
+      M=-D
+
+      // there is loop here
+      (LOOP)
+        @LOOP // this part is indented with extra whitespace
+        A=D
+        0; JMP // here we continue the loop
+    """)
   }
 }
