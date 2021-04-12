@@ -1,8 +1,8 @@
-package co.mrzzy.nand2tetris.p1.project6;
 /*
  * Hackas - HACK Assembler
  * HACK Assembly Parser
  */
+package co.mrzzy.nand2tetris.p1.project6;
 
 import scala.util.Properties
 import scala.util.matching.Regex
@@ -46,9 +46,9 @@ object Parser {
 
     try {
       line.text match {
-        // some optional regex groups on no match results in null variables
-        // ie 'jump' may be null when the user does specify the jump part of a c
-        // c instruction. Use Option to convert nulls to empty string
+        // some optional regex groups on no match results in null variables.
+        // ie 'jump' may be null when the user does specify the jump part of a c instruction.
+        // Use Option to convert nulls to empty string
         case aKindPattern(address) => new AInstruction(address)
         case cKindPattern(dest, compute, jump) =>
           new CInstruction(
@@ -57,7 +57,7 @@ object Parser {
             Option(jump).getOrElse("")
           )
         case labelDeclarePattern(label) =>
-          new LabelDeclare(Option(label).getOrElse(""))
+          new LabelDeclaration(Option(label).getOrElse(""))
         case badInstruction => {
           throw new IllegalArgumentException(
             s"Error: Line ${line.number}: Malformed Instruction not a" +
