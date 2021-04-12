@@ -37,6 +37,43 @@ class TestAInstruction extends FunSuite {
       }
     }
   }
+
+  test(
+    "new AInstruction: error on given numeric address that overflows 15 bit"
+  ) {
+    intercept[OutOfMemoryError] {
+      new AInstruction("32768")
+    }
+  }
+
+  test("AInstruction.toBinary") {
+    val symTable = BuiltinSymbols ++ Map(
+      "counter" -> 16,
+      "length" -> 21,
+      "LOOP" -> 6
+    )
+
+    val addresses = List(
+      "0",
+      "3252",
+      "R11",
+      "counter",
+      "LOOP"
+    )
+    val binAInstructions = addresses
+      .map(AInstruction(_))
+      .map(_.toBinary(symTable))
+
+    assert(
+      binAInstructions == List(
+        "0000000000000000",
+        "0000110010110100",
+        "0000000000001011",
+        "0000000000010000",
+        "0000000000000110"
+      )
+    )
+  }
 }
 
 class TestCInstruction extends FunSuite {
@@ -78,6 +115,25 @@ class TestCInstruction extends FunSuite {
       }
     }
   }
+
+  test("CInstruction.toBinary") {
+    val binCInstructions = List(
+      new CInstruction("", "D&A", ""),
+      new CInstruction("MD", "A+1", ""),
+      new CInstruction("", "D|A", "JGT"),
+      new CInstruction("A", "!D", "JMP")
+    ).map(_.toBinary(Map()))
+
+    assert(
+      binCInstructions == List(
+        "1110000000000000",
+        "1110110111011000",
+        "1110010101000001",
+        "1110001101100111"
+      )
+    )
+  }
+
 }
 
 class TestLabelDeclaration extends FunSuite {

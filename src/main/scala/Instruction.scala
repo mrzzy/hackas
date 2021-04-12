@@ -26,7 +26,7 @@ sealed trait Instruction {
     * @param symTable to use to resolve symbols used in the instuction.f
     * @return The binary HACK Machine Language representation of this instruction
     */
-  def toBinary(symTable: Symbols.SymbolTable): String = ""
+  def toBinary(symTable: Symbols.SymbolTable): String
 
   /** Whether this [[Instruction]] is a Virtual Instruction
     *
@@ -42,14 +42,36 @@ sealed trait Instruction {
   * ADDRESS must be an non empty numeric or symbolic addresss.
   *
   * @throws IllegalArgumentException if addr given is not a valid numeric or symbolic address
+  * @throws OutOfMemoryError if given a numeric address that overflows
+  *   the instruction's 15-bit address field
   */
+// TODO(mrzzy): merge addr and address fields
 case class AInstruction(private val addr: String) extends Instruction {
   // check that address is symbolic or numeric (made of digits)
   val address = if (!(SymbolPattern.matches(addr) || addr.forall(_.isDigit))) {
     throw new IllegalArgumentException(
       s"A Instruction expected symbol or numeric addresss but got: @$addr"
     )
+  } else if (addr.forall(_.isDigit) && addr.toInt.toBinaryString.length > 15) {
+    // numeric address: check address fits in 16 bits
+    throw new OutOfMemoryError(
+      s"Numeric address given overflows 15-bit address field: $addr"
+    )
   } else addr
+
+  def toBinary(symTable: Symbols.SymbolTable): String = {
+    // resolve label symbol if address used is symbolic
+    val numAddr = if (SymbolPattern.matches(address)) {
+      println(address)
+      symTable(address)
+    } else address.toInt
+
+    // rewrite A instruction as binary: [op] [15-bit address]
+    val binAddr = numAddr.toBinaryString
+    val zeroPad = "0" * (15 - binAddr.length)
+    // A instruction is signified by op = 0
+    "0" + zeroPad + binAddr
+  }
 
   override def toString = s"@$address"
   override def isVirtual: Boolean = false
@@ -69,6 +91,7 @@ case class AInstruction(private val addr: String) extends Instruction {
   *
   *  @throws UnsupportedOperationException if CInstruction constructed is unsupported
   */
+// TODO(mrzzy): merge short and long fields (ie dest and destination)
 case class CInstruction(
     private val dest: String,
     private val comp: String,
@@ -100,6 +123,21 @@ case class CInstruction(
         s".\n Supported jump directives: ${supportedJumps}"
     )
   } else jmp
+
+  def toBinary(symTable: Symbols.SymbolTable): String = {
+    // convert destinations to binary by setting bits for each destination
+    val binDest = "AMD".map {
+      case dest if destination.contains(dest) => "1"
+      case _                                  => "0"
+    }.mkString
+
+    // convert compute & jump to binary using truth table
+    val binCompute = CInstruction.ComputeTruthTable(compute)
+    val binJump = CInstruction.JumpTruthTable(jump)
+
+    // form binary C instruction in the form: 1 1 1 [compute] [dest] [jump]
+    "111" + binCompute + binDest + binJump
+  }
 
   override def toString = {
     (if (destination.length > 0) s"$destination=" else "") + compute +
@@ -185,4 +223,7 @@ case class LabelDeclaration(val label: String) extends Instruction {
   override def isVirtual: Boolean = true
 
   override def toString = s"($label)"
+
+  // Virtua instruction: no binary representation
+  override def toBinary(symTable: Symbols.SymbolTable): String = ""
 }

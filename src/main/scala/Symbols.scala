@@ -102,7 +102,6 @@ object Symbols {
       }
       .toSet
       .filter(!existingSyms.contains(_))
-    println(s"variableSymbols: ${variableSymbols}")
 
     // allocate variables symbols with addresses above 16
     variableSymbols.zipWithIndex.map { case (variable, idx) =>
