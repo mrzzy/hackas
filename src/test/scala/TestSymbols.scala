@@ -46,12 +46,16 @@ class TestSymbols extends FunSuite {
       new AInstruction("forward_label"),
       new LabelDeclaration("LOOP"),
       new AInstruction("index"),
-      new CInstruction("M", "M+1", ""),
+      new CInstruction("M", "D+M", ""),
       new LabelDeclaration("forward_label"),
       new AInstruction("index"),
       new CInstruction("D", "M", ""),
       new AInstruction("length"),
-      new CInstruction("M", "D", "")
+      new CInstruction("M", "D", ""),
+      new AInstruction("1434"),
+      new CInstruction("", "D|A", ""),
+      new AInstruction("R13"),
+      new CInstruction("M", "A+1", "")
     )
 
     val existingSyms = BuiltinSymbols ++ Symbols.scanLabels(instructions)

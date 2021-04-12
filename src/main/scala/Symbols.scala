@@ -101,7 +101,10 @@ object Symbols {
         instruction.address
       }
       .toSet
-      .filter(!existingSyms.contains(_))
+      // existing symbols and numeric address cannot be variable symbols
+      .filter(address =>
+        !(existingSyms.contains(address) || address.forall(_.isDigit))
+      )
 
     // allocate variables symbols with addresses above 16
     variableSymbols.zipWithIndex.map { case (variable, idx) =>
