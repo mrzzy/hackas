@@ -31,7 +31,7 @@ object Options {
     *  @return Contructed [[Options]] instance.
     */
   def fromArgs(args: Array[String]): Options = {
-    if (args.length <= 1) {
+    if (args.length < 1) {
       throw new IndexOutOfBoundsException(
         "Expected passed args to have 1 or more elements"
       )
