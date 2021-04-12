@@ -26,8 +26,10 @@ object Main {
     }
 
     // parse input hack assembly into instructions
-    val hackAsm = Source.fromFile(options.inputPath, "UTF-8").getLines.mkString
+    val hackAsm =
+      Source.fromFile(options.inputPath, "UTF-8").getLines.mkString("\n")
     val instructions = Parser.parse(hackAsm)
+
     // scan instructions for symbols
     val symTable = Symbols.scan(instructions.toList)
     // resolve symbols and assemble HACK assembly to binary HACK machine language
