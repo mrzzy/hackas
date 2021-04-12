@@ -100,7 +100,7 @@ object Symbols {
       .collect { case instruction: AInstruction =>
         instruction.address
       }
-      .toSet
+      .distinct
       // existing symbols and numeric address cannot be variable symbols
       .filter(address =>
         !(existingSyms.contains(address) || address.forall(_.isDigit))
