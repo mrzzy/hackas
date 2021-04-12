@@ -37,7 +37,6 @@ object Options {
       )
     }
     // filter options from given args
-    // .tail to skip program name in args
     val options = args.filter { _(0) == '-' }
 
     // parse options and their arguments
@@ -54,9 +53,8 @@ object Options {
     }
 
     // filter out arguments consumed for options to obtain program args
-    // .tail required to skip out program name in args.
     val optionArgs = givenOptions.keySet | givenOptions.values.toSet
-    val programArgs = args.tail.filter(!optionArgs.contains(_))
+    val programArgs = args.filter(!optionArgs.contains(_))
     if (programArgs.length != 1) {
       throw new IllegalArgumentException(
         s"Error: Missing required INPUT path argument"

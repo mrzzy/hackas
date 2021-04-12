@@ -10,21 +10,21 @@ class TestOptions extends FunSuite {
   // test Options.formArgs
   test("Options.fromArgs") {
     val opts = Options.fromArgs(
-      Array("hackas", "--output", "out.hack", "in.asm")
+      Array("--output", "out.hack", "in.asm")
     )
     assert(opts == Options("in.asm", "out.hack", "false"))
   }
 
   test("Options.fromArgs: Output path unspecified") {
     val opts = Options.fromArgs(
-      Array("hackas", "in.asm")
+      Array("add.asm")
     )
-    assert(opts == Options("in.asm", "out.hack", "false"))
+    assert(opts == Options("add.asm", "out.hack", "false"))
   }
 
   test("Options.fromArgs: Only help option") {
     val opts = Options.fromArgs(
-      Array("hackas", "--help")
+      Array("--help")
     )
     assert(opts == Options("in.asm", "out.hack", "true"))
   }
@@ -32,7 +32,7 @@ class TestOptions extends FunSuite {
   test("Options.fromArgs: Error missing input path") {
     val exception = intercept[IllegalArgumentException] {
       Options.fromArgs(
-        Array("hackas", "--output", "out.hack")
+        Array("--output", "out.hack")
       )
     }
   }
@@ -40,15 +40,15 @@ class TestOptions extends FunSuite {
   test("Options.fromArgs: Error bad option") {
     val exception = intercept[IllegalArgumentException] {
       Options.fromArgs(
-        Array("hackas", "-o", "out.hack", "in.asm")
+        Array("-o", "out.hack", "in.asm")
       )
     }
   }
 
-  test("Options.fromArgs: Error no args (other than program name) given") {
+  test("Options.fromArgs: Error no args given") {
     val exception = intercept[IndexOutOfBoundsException] {
       Options.fromArgs(
-        Array("hackas")
+        Array()
       )
     }
   }
