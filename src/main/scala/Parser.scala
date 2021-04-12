@@ -40,9 +40,9 @@ object Parser {
     */
   def parseLine(line: Line): Instruction = {
     // match instruction kind using regex & parse instruction
-    val aKindPattern = "@(\\w+)".r
+    val aKindPattern = s"@(\\d+|${SymbolPattern})".r
     val cKindPattern = "(?:(\\w+)=)?([-!+&|\\w01]+)(?:;(\\w+))?".r
-    val labelDeclarePattern = "\\((\\w+)\\)".r
+    val labelDeclarePattern = s"\\((${SymbolPattern})\\)".r
 
     try {
       line.text match {
@@ -60,7 +60,7 @@ object Parser {
           new LabelDeclaration(Option(label).getOrElse(""))
         case badInstruction => {
           throw new IllegalArgumentException(
-            s"Error: Line ${line.number}: Malformed Instruction not a" +
+            s"Error: Line ${line.number}: Malformed Instruction not a " +
               s"A, C Instruction or Label Declaration: ${line.text}"
           )
         }

@@ -62,7 +62,6 @@ case class AInstruction(private val addr: String) extends Instruction {
   def toBinary(symTable: Symbols.SymbolTable): String = {
     // resolve label symbol if address used is symbolic
     val numAddr = if (SymbolPattern.matches(address)) {
-      println(address)
       symTable(address)
     } else address.toInt
 

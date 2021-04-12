@@ -11,7 +11,7 @@ object Symbols {
     *  Symbols cannot start with a number and should contain
     *  only contains number, letters and underscores
     */
-  val SymbolPattern = "[a-zA-Z_]\\w*".r
+  val SymbolPattern = "[a-zA-Z_][\\w.$]*".r
 
   /** SymbolTable maps string symbols to RAM or ROM addresses */
   type SymbolTable = Map[String, Int]

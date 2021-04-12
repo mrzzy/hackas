@@ -10,11 +10,11 @@ import Symbols.BuiltinSymbols
 class TestSymbols extends FunSuite {
   test("Symbols.scanLabels") {
     val instructions = List(
-      new AInstruction("ENDIF"),
+      new AInstruction("END.IF"),
       new LabelDeclaration("LOOP"),
       new CInstruction("M", "M+1", ""),
       new LabelDeclaration("END_LOOP"),
-      new LabelDeclaration("ENDIF"),
+      new LabelDeclaration("END.IF"),
       new CInstruction("", "M-D", "JLT")
     )
 
@@ -22,7 +22,7 @@ class TestSymbols extends FunSuite {
       Symbols.scanLabels(instructions) == Map(
         "LOOP" -> 1,
         "END_LOOP" -> 2,
-        "ENDIF" -> 2
+        "END.IF" -> 2
       )
     )
   }

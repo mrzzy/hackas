@@ -68,7 +68,8 @@ class TestParser extends FunSuite {
 
     // A instruction test cases
     val aTestCases = List(
-      "@ENDIF" -> new AInstruction("ENDIF"),
+      "@END.IF" -> new AInstruction("END.IF"),
+      "@switch$case1" -> new AInstruction("switch$case1"),
       "@LOOP" -> new AInstruction("LOOP"),
       "@R16" -> new AInstruction("R16"),
       "@3325" -> new AInstruction("3325")
