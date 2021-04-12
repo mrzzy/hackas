@@ -15,18 +15,23 @@ import javax.naming.NameAlreadyBoundException
   */
 sealed trait Instruction {
 
-  /** Convert this Assembly [[Instruction]] to its binary Machine Language representation
+  /** Convert this Assembly [[Instruction]] to its binary Hack Machine Language representation
     *
+    * Resolves symbols in the instruction and assembles it into its binary equavilent.
+    *
+    * Note:
     * Since Virtual Instructions have no binary representation this method will
-    * return empty string.
+    * return empty string for Virtual instructions.
     *
+    * @param symTable to use to resolve symbols used in the instuction.f
     * @return The binary HACK Machine Language representation of this instruction
     */
   def toBinary(symTable: Symbols.SymbolTable): String = ""
 
   /** Whether this [[Instruction]] is a Virtual Instruction
-    *  Virtual Instruction: Has no binary representation as it does not actually
-    *  exist in HACK Machine Language.
+    *
+    * Virtual Instruction: Has no binary representation as it does not actually
+    * exist in HACK Machine Language.
     */
   def isVirtual: Boolean
 }
