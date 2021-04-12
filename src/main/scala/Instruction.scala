@@ -97,7 +97,7 @@ case class CInstruction(
     private val jmp: String
 ) extends Instruction {
   // check that destination is supported
-  val destination = if ((dest.toSet &~ "AMD".toSet).size > 0) {
+  val destination = if ((dest.toSet &~ "ADM".toSet).size > 0) {
     throw new UnsupportedOperationException(
       s"C Instruction only supports A,M and/or D as destination(s), got: ${dest}"
     )
@@ -125,7 +125,7 @@ case class CInstruction(
 
   def toBinary(symTable: Symbols.SymbolTable): String = {
     // convert destinations to binary by setting bits for each destination
-    val binDest = "AMD".map {
+    val binDest = "ADM".map {
       case dest if destination.contains(dest) => "1"
       case _                                  => "0"
     }.mkString
