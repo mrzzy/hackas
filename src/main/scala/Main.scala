@@ -33,7 +33,10 @@ object Main {
     // scan instructions for symbols
     val symTable = Symbols.scan(instructions.toList)
     // resolve symbols and assemble HACK assembly to binary HACK machine language
-    val hackML = instructions.map(_.toBinary(symTable)).mkString("\n")
+    val hackML = instructions
+      .filter(!_.isVirtual)
+      .map(_.toBinary(symTable))
+      .mkString("\n")
 
     // write assembled HACK ML to output path
     val out = new PrintWriter(options.outputPath)
