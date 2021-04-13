@@ -15,7 +15,7 @@ class TestSymbols extends FunSuite {
       new CInstruction("M", "M+1", ""),
       new LabelDeclaration("END_LOOP"),
       new LabelDeclaration("END.IF"),
-      new CInstruction("", "M-D", "JLT")
+      new CInstruction("M", "M+1", "")
     )
 
     assert(
@@ -51,7 +51,7 @@ class TestSymbols extends FunSuite {
       new AInstruction("index"),
       new CInstruction("D", "M", ""),
       new AInstruction("length"),
-      new CInstruction("M", "D", ""),
+      new CInstruction("M", "D&A", ""),
       new AInstruction("1434"),
       new CInstruction("", "D|A", ""),
       new AInstruction("R13"),

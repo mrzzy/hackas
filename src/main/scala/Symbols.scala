@@ -48,25 +48,35 @@ object Symbols {
     *  number of the next instruction as its address in the symbol table
     *
     *  @param instructions to scan for LabelDeclaration to build symbol table.
-    *  @throws IllegalArgumentException If
+    *  @throws IllegalArgumentException if given a label that does not reference any instruction.
     *  @return SymbolTable with symbols derived from labels.
     */
   def scanLabels(instructions: List[Instruction]): SymbolTable = {
-    // index each non-virtual instruction with a instruction number
-    val instructionIndex = instructions.filter(!_.isVirtual).zipWithIndex.toMap
     // scan for label definitions and referenced instructions
-    val labelInstructionMap = instructions.zipWithIndex
+    val instructionIndex = instructions.zipWithIndex
+    val labelIndexes = instructionIndex
       .collect {
-        case (l: LabelDeclaration, i: Int) => {
+        case (l: LabelDeclaration, labelIdx: Int) => {
           try {
-            // label should refer the next non virtual/ real HACK instruction
-            val referInstruction = instructions.zipWithIndex
-              .filter { case (instruction, idx) =>
-                idx > i && (!instruction.isVirtual)
+            // compile index of real / non-virtual instruction to:
+            // idx: Instructions index among all instructions
+            // realIdx: Instruction's index amoung real / non-virtual instructions
+            val realInstructionIndex = instructionIndex
+              .filter(!_._1.isVirtual)
+              .zipWithIndex
+              .map { case ((instruction, idx), realIdx) =>
+                (instruction, idx, realIdx)
               }
-              .minBy(_._2)
-              ._1
-            (l, referInstruction)
+
+            // label should refer the next non virtual / real HACK instruction
+            val referIdx = realInstructionIndex
+              .filter { case (_, idx, _) =>
+                idx > labelIdx
+              }
+              // referIdx should reference index of real instructions
+              .map(_._3)
+              .min
+            (l.label, referIdx)
           } catch {
             case e: UnsupportedOperationException =>
               throw new IllegalArgumentException(
@@ -77,9 +87,7 @@ object Symbols {
       }
 
     // construct label symbol table with: label -> referenced instruction index
-    labelInstructionMap.map { case (l, referInstruction) =>
-      (l.label, instructionIndex(referInstruction))
-    }.toMap
+    labelIndexes.toMap
   }
 
   /** Scan AInstruction & existing symbols to allocate variables in symbol table
