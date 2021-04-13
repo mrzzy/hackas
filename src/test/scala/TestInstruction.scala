@@ -118,6 +118,7 @@ class TestCInstruction extends FunSuite {
 
   test("CInstruction.toBinary") {
     val binCInstructions = List(
+      new CInstruction("", "D+1", ""),
       new CInstruction("", "D&A", ""),
       new CInstruction("D", "A+1", ""),
       new CInstruction("", "D|A", "JGT"),
@@ -126,6 +127,7 @@ class TestCInstruction extends FunSuite {
 
     assert(
       binCInstructions == List(
+        "1110011111000000",
         "1110000000000000",
         "1110110111010000",
         "1110010101000001",
